@@ -23,6 +23,8 @@ static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+void isa_watch_point_display();
+
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -54,6 +56,28 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args) {
+  int step = 1;
+  if (args) {
+    step = atoi(args);
+  }
+  if (step < 1) {
+    step = 1;
+  }
+  cpu_exec(step);
+  return 0;
+}
+
+static int cmd_info(char *args) {
+  if (*args == 'r') {
+    isa_reg_display();
+  }
+  if (*args == 'w') {
+    isa_watch_point_display();     
+  }
+  return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -62,6 +86,8 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
+  { "si", "Single step execulation.", cmd_si},
+  { "info", "Scan register status and infos", cmd_info},
 
   /* TODO: Add more commands */
 
