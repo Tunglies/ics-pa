@@ -43,10 +43,21 @@ static char* rl_gets() {
 }
 
 static int cmd_c(char *args) {
-  cpu_exec(-1);
+  cpu_exec(1);
   return 0;
 }
 
+static int cmd_si(char *args) {
+  int step = 1; 
+  if (args != NULL || strcmp(args, "") == 0) {
+    step = atoi(args);
+    if (step < 1) {
+      step = 1;
+    }
+  }
+  cpu_exec(step);
+  return 0;
+}
 
 static int cmd_q(char *args) {
   return -1;
@@ -62,6 +73,7 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
+  { "si", "Single Step Execute N Times. si [N]", cmd_si},
 
   /* TODO: Add more commands */
 
