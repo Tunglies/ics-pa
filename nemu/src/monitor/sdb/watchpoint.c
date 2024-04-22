@@ -20,7 +20,7 @@
 typedef struct watchpoint {
   int NO;
   struct watchpoint *next;
-
+  bool is_available;
   /* TODO: Add more members if necessary */
 
 } WP;
@@ -33,6 +33,7 @@ void init_wp_pool() {
   for (i = 0; i < NR_WP; i ++) {
     wp_pool[i].NO = i;
     wp_pool[i].next = (i == NR_WP - 1 ? NULL : &wp_pool[i + 1]);
+    wp_pool[i].is_available = true;
   }
 
   head = NULL;
@@ -41,3 +42,24 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 
+
+WP* deque_watchpoint() {
+  for (uint8_t i=0; i<NR_WP; i++) {
+    if (free_[i].is_available) {
+      Log("WatchPoint: %d is available", i);
+      return &free_[i];
+    }
+  }
+  return NULL;
+}
+
+int enque_watchpoint() {
+  return 0;
+}
+
+int isa_watchpoint_display() {
+  for (uint8_t i=0; i<NR_WP; i++) {
+    printf("WatchPoint: %d\n", i);
+  }
+  return 0;
+}

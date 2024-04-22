@@ -24,6 +24,14 @@ static int is_batch_mode = false;
 void init_regex();
 void init_wp_pool();
 
+void isa_reg_display();
+void isa_watchpoint_display();
+
+// word_t vaddr_ifetch(vaddr_t addr, int len);
+word_t vaddr_read(vaddr_t addr, int len);
+// void vaddr_write(vaddr_t addr, int len, word_t data);
+
+
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
   static char *line_read = NULL;
@@ -47,6 +55,12 @@ static int cmd_c(char *args) {
   return 0;
 }
 
+static int cmd_q(char *args) {
+  return -1;
+}
+
+static int cmd_help(char *args);
+
 static int cmd_si(char *args) {
   int step = 1; 
   if (args != NULL || strcmp(args, "") == 0) {
@@ -59,11 +73,50 @@ static int cmd_si(char *args) {
   return 0;
 }
 
-static int cmd_q(char *args) {
-  return -1;
+static int cmd_info(char *args) {
+  if (args == NULL) return 0;
+  
+  if (!strcmp(args, "r")) {
+    isa_reg_display();
+    return 0;
+  }
+
+  if (!strcmp(args, "w")) {
+    isa_watchpoint_display();
+    return 0;
+  }
+  return 0;
 }
 
-static int cmd_help(char *args);
+static int cmd_x(char *args) {
+    if (args == NULL) return 0;
+
+    char *token;
+    char *rest = args;
+
+    token = strtok_r(rest, " ", &rest);
+    if (token == NULL) {
+        panic("Error: Insufficient arguments\n");
+        return 1;
+    }
+    int times = atoi(token);
+    Log("Scan Times: %d", times);
+
+    token = strtok_r(rest, " ", &rest);
+    if (token == NULL) {
+        panic("Error: Insufficient arguments\n");
+        return 1;
+    }
+    vaddr_t vaddr = (vaddr_t)strtoul(token, NULL, 0);
+    Log("Scan Address: %lu", vaddr);
+
+    for (int i = 0; i < times; i++) {
+        printf("%lu = %08lx\n", vaddr + i*4, vaddr_read(vaddr + i*4, 4));
+    }
+
+    return 0;
+}
+
 
 static struct {
   const char *name;
@@ -74,6 +127,8 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "si", "Single Step Execute N Times. si [N]", cmd_si},
+  { "info", "Display Register Status Or Watch Point Info. info SUBCMD", cmd_info},
+  { "x", "Scan Memory Address. x N EXPR", cmd_x},
 
   /* TODO: Add more commands */
 
